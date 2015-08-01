@@ -1,0 +1,6 @@
+.*
+**/project/META-INF/
+**/project/project/
+**/project/src/
+**/target/
+!.gitignore
