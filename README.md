@@ -69,4 +69,4 @@ and install it locally:
             
         2. Run Zeppelin as a script or daemon:
             * `bin/zeppelin.sh`
-            * `bin/zeppelin-daemon.sh start` (stop it with `bin/zeppelin-daemon.sh start`)
+            * `bin/zeppelin-daemon.sh start` (stop it with `bin/zeppelin-daemon.sh stop`)
