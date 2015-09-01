@@ -41,6 +41,7 @@ class EmmaRepl(properties: Properties) {
 
   private val scalaRepl = {
     val settings = new Settings(writer.println)
+    settings.embeddedDefaults(Thread.currentThread.getContextClassLoader)
     settings.usejavacp.value = true
 
     for (dir <- options get `codegen.dir`)
@@ -64,6 +65,7 @@ class EmmaRepl(properties: Properties) {
   def init() {
     scalaRepl.initializeSynchronous()
     scalaRepl.ensureClassLoader()
+    scalaRepl.setContextClassLoader()
     val completion = new JLineCompletion(scalaRepl)
     jLine = new ArgumentCompleter(scalaToJline(completion.completer()))
     jLine setStrict false
@@ -93,19 +95,22 @@ class EmmaRepl(properties: Properties) {
       case _ => "Native()"
     }
 
-    for ((key, value) <- options)
-      interpret(s"""System.setProperty("$key", "$value")""")
+    val cp = scalaRepl.compilerClasspath map { _.getFile } mkString ":"
 
-    interpret("import eu.stratosphere.emma.api._")
-    interpret("import eu.stratosphere.emma.runtime._")
-    interpret(s"val rt = $runtime")
+    scalaRepl beQuietDuring {
+      for ((key, value) <- options)
+        interpret( s"""sys.props += ("$key", "$value")""")
+
+      interpret( s"""sys.props += ("${`runtime.cp`}", "$cp")""")
+      interpret("import eu.stratosphere.emma.api._")
+      interpret("import eu.stratosphere.emma.runtime._")
+      interpret(s"val rt = $runtime")
+    }
   }
 
   def close(): Unit = {
-    try {
-      interpret("rt.closeSession()")
-      scalaRepl.close()
-    } catch { case _: Exception => }
+    interpret("rt.closeSession()")
+    scalaRepl.close()
   }
 
   def complete(buffer: String, cursor: Int): JList[String] = {
@@ -159,9 +164,10 @@ object EmmaRepl {
   val `x.port`      = "emma.execution.port"
   val `flink.path`  = "emma.flink.path"
   val `spark.path`  = "emma.spark.path"
+  val `runtime.cp`  = "emma.runtime.classpath"
 
   val defaults: JMap[String, String] = Map(
-    `codegen.dir` -> s"${System getProperty "java.io.tmpdir"}/emma/codegen",
+    `codegen.dir` -> s"${sys props "java.io.tmpdir"}/emma/codegen",
     `x.backend`   -> "native",
     `x.mode`      -> "local",
     `x.host`      -> "localhost",

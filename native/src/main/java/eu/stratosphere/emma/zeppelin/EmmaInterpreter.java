@@ -34,8 +34,8 @@ public class EmmaInterpreter extends Interpreter {
       .add("emma.codegen.dir",
            Paths.get(System.getProperty("java.io.tmpdir"), "emma", "codegen").toString(),
            "Temporary directory for Emma-generated classes")
-      .add("emma.execution.backend", "native", "Runtime backend {[native],flink,spark}")
-      .add("emma.execution.mode", "local", "Execution mode {[local],remote}")
+      .add("emma.execution.backend", "native",    "Runtime backend {[native],flink,spark}")
+      .add("emma.execution.mode",    "local",     "Execution mode {[local],remote}")
       .add("emma.execution.host",    "localhost", "Master node address (when mode=remote)")
       .add("emma.execution.port",    "6123",      "Runtime backend port number")
       .add("emma.flink.path",
