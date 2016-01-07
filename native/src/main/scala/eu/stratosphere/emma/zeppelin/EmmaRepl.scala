@@ -98,18 +98,17 @@ class EmmaRepl(properties: Properties) {
     val cp = scalaRepl.compilerClasspath map { _.getFile } mkString ":"
 
     scalaRepl beQuietDuring {
-      for ((key, value) <- options)
-        interpret( s"""sys.props += ("$key", "$value")""")
-
-      interpret( s"""sys.props += ("${`runtime.cp`}", "$cp")""")
+      for ((key, value) <- options) interpret(s"""sys.props += "$key" -> "$value"""")
+      interpret( s"""sys.props += "${`runtime.cp`}" -> "$cp"""")
       interpret("import eu.stratosphere.emma.api._")
       interpret("import eu.stratosphere.emma.runtime._")
-      interpret(s"val rt = $runtime")
+      interpret(s"val engine = $runtime")
+      interpret(s"val native = eu.stratosphere.emma.runtime.Native()")
     }
   }
 
   def close(): Unit = {
-    interpret("rt.closeSession()")
+    interpret("engine.closeSession()")
     scalaRepl.close()
   }
 

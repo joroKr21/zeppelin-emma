@@ -17,7 +17,7 @@
 
 val versions = new {
   val emma       = "1.0-SNAPSHOT"
-  val flink      = "0.9-SNAPSHOT"
+  val flink      = "0.10.0"
   val spark      = "1.3.1"
   val hadoop     = "2.2.0"
   val zeppelin   = "0.6.0-incubating-SNAPSHOT"
@@ -102,10 +102,10 @@ lazy val flink = project.in(file("flink")).settings(common: _*).settings(
   deploySubdir     += "/flink",
 
   libraryDependencies ++= Seq( // Flink
-    "eu.stratosphere" % "emma-flink"    % versions.emma,
-    "eu.stratosphere" % "flink-clients" % versions.flink,
-    "eu.stratosphere" % "flink-java"    % versions.flink,
-    "eu.stratosphere" % "flink-scala"   % versions.flink
+    "eu.stratosphere"  %  "emma-flink"    % versions.emma,
+    "org.apache.flink" %% "flink-clients" % versions.flink,
+    "org.apache.flink" %% "flink-java"    % versions.flink,
+    "org.apache.flink" %% "flink-scala"   % versions.flink
   ) map { _ % "runtime" })
 
 lazy val spark = project.in(file("spark")).settings(common: _*).settings(

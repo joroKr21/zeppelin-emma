@@ -22,17 +22,7 @@ Zeppelin installation with the Emma interpreter included (i.e. on a \*nix system
     mvn install -DskipTests
     ```
     
-2. Clone the
-[Emma-compatible branch of Flink](https://github.com/stratosphere/flink/tree/release-0.9-emma)
-and install it locally:
-
-    ```
-    git clone https://github.com/stratosphere/flink.git
-    cd flink
-    mvn install -DskipTests
-    ```
-    
-3. Clone [Emma](https://github.com/stratosphere/emma) and install it locally:
+2. Clone [Emma](https://github.com/stratosphere/emma) and install it locally:
 
     ```
     git clone https://github.com/stratosphere/emma.git
@@ -40,7 +30,7 @@ and install it locally:
     mvn install -DskipTests
     ```
     
-4. Clone [Zeppelin-Emma](https://github.com/joroKr21/zeppelin-emma):
+3. Clone [Zeppelin-Emma](https://github.com/joroKr21/zeppelin-emma):
 
     ```
     git clone https://github.com/joroKr21/zeppelin-emma.git
@@ -48,7 +38,7 @@ and install it locally:
     
     You are now ready to deploy the interpreter to Zeppelin.
     
-5. Now, assuming you have installed all dependencies:
+4. Now, assuming you have installed all dependencies:
     * To run all tests (and check that all is fine) use `./sbt test`
         * Beware that the first time it will take long to download `sbt`
     * To deploy to an existing Zeppelin installation use one of

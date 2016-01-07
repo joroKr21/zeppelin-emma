@@ -64,7 +64,7 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
 
   it should "have a predefined native runtime" in {
     withNative { repl =>
-      val result = repl interpret "rt"
+      val result = repl interpret "engine"
       result.code    should be      (Code.SUCCESS)
       result.message should include ("Native")
     }
@@ -72,7 +72,7 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
 
   it should "have a predefined Flink runtime" in {
     withFlink { repl =>
-      val result = repl interpret "rt"
+      val result = repl interpret "engine"
       result.code    should be      (Code.SUCCESS)
       result.message should include ("Flink")
     }
@@ -80,7 +80,7 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
 
   it should "have a predefined Spark runtime" in {
     withSpark { repl =>
-      val result = repl interpret "rt"
+      val result = repl interpret "engine"
       result.code    should be      (Code.SUCCESS)
       result.message should include ("Spark")
     }
@@ -92,7 +92,7 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
         val result = repl.interpret(s"""
           emma.parallelize {
             DataBag($xs: Seq[Int]).sum()
-          }.run(rt)""")
+          }.run(engine)""")
 
         println(result.message)
         result.code    should be      (Code.SUCCESS)
