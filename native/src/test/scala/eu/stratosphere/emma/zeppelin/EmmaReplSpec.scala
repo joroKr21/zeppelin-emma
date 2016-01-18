@@ -16,6 +16,7 @@
  */
 package eu.stratosphere.emma.zeppelin
 
+import java.nio.file.Paths
 import java.util.Properties
 
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
@@ -49,8 +50,8 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
   it should "handle correct code without errors" in {
     withNative { repl =>
       val result = repl interpret "val x = 42"
-      result.code         should be (Code.SUCCESS)
-      result.message.trim should be ("x: Int = 42")
+      result.code    should be (Code.SUCCESS)
+      result.message should be ("x: Int = 42")
     }
   }
 
@@ -64,9 +65,12 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
 
   it should "have a predefined native runtime" in {
     withNative { repl =>
-      val result = repl interpret "engine"
-      result.code    should be      (Code.SUCCESS)
-      result.message should include ("Native")
+      val engine = repl interpret "engine"
+      engine.code    should be      (Code.SUCCESS)
+      engine.message should include ("Native")
+      val native = repl interpret "native"
+      native.code    should be      (Code.SUCCESS)
+      native.message should include ("Native")
     }
   }
 
@@ -87,18 +91,21 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
   }
 
   it should "run a simple sum algorithm" in {
-    forAll { xs: Seq[Int] =>
-      withNative { repl =>
-        val result = repl.interpret(s"""
-          emma.parallelize {
-            DataBag($xs: Seq[Int]).sum()
-          }.run(engine)""")
+    withNative(verifySum)
+    // FIXME: Flink doesn't work
+//    withFlink(verifySum)
+    withSpark(verifySum)
+  }
 
-        println(result.message)
-        result.code    should be      (Code.SUCCESS)
-        result.message should include (xs.sum.toString)
-      }
-    }
+  def verifySum(repl: EmmaRepl) = forAll { xs: Seq[Int] =>
+    val result = repl interpret s"""
+        emma.parallelize {
+          DataBag($xs: Seq[Int]).sum()
+        }.run(engine)"""
+
+    println(result.message)
+    result.code    should be      (Code.SUCCESS)
+    result.message should include (xs.sum.toString)
   }
 
   def withRepl(options: (String, String)*)(f: EmmaRepl => Unit) = {
@@ -120,5 +127,7 @@ class EmmaReplSpec extends FlatSpec with Matchers with PropertyChecks {
     withRepl(`x.backend` -> "spark", `spark.path` -> lib("spark"))(f)
   
   def lib(runtime: String) =
-    s"${System.getProperty("project.base.dir", "..")}/../$runtime/target/pack/lib"
+    Paths.get(getClass.getResource("/").getFile)
+      .getParent.getParent.getParent.getParent
+      .resolve(s"$runtime/target/pack/lib").toAbsolutePath.toString
 }

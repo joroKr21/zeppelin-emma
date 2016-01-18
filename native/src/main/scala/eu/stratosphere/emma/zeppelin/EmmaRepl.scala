@@ -65,51 +65,32 @@ class EmmaRepl(properties: Properties) {
   def init() {
     scalaRepl.initializeSynchronous()
     scalaRepl.ensureClassLoader()
-    scalaRepl.setContextClassLoader()
     val completion = new JLineCompletion(scalaRepl)
     jLine = new ArgumentCompleter(scalaToJline(completion.completer()))
     jLine setStrict false
 
     val runtime = options get `x.backend` match {
-      case Some("flink") =>
-        val port = try { options(`x.port`).toInt   }
-                 catch { case _: Exception => 6123 }
-
-        options get `x.mode` match {
-          case Some("local")  => s"""FlinkLocal("localhost", $port)"""
-          case Some("remote") => s"""FlinkRemote("${options(`x.host`)}", $port)"""
-          case _              => "Native()"
-        }
-
-      case Some("spark") =>
-        val cores = Runtime.getRuntime.availableProcessors
-        val port  = try { options(`x.port`).toInt   }
-                  catch { case _: Exception => 7077 }
-
-        options get `x.mode` match {
-          case Some("local")  => s"""SparkLocal("local[$cores]", $port)"""
-          case Some("remote") => s"""SparkRemote("${options(`x.host`)}", $port)"""
-          case _              => "Native()"
-        }
-
-      case _ => "Native()"
+      case Some(backend) => s"${backend.capitalize}()"
+      case None => "Native()"
     }
 
     val cp = scalaRepl.compilerClasspath map { _.getFile } mkString ":"
 
     scalaRepl beQuietDuring {
       for ((key, value) <- options) interpret(s"""sys.props += "$key" -> "$value"""")
-      interpret( s"""sys.props += "${`runtime.cp`}" -> "$cp"""")
+      interpret(s"""sys.props += "${`runtime.cp`}" -> "$cp"""")
       interpret("import eu.stratosphere.emma.api._")
-      interpret("import eu.stratosphere.emma.runtime._")
-      interpret(s"val engine = $runtime")
+      interpret(s"val engine = new eu.stratosphere.emma.runtime.$runtime")
       interpret(s"val native = eu.stratosphere.emma.runtime.Native()")
     }
   }
 
   def close(): Unit = {
     interpret("engine.closeSession()")
+    interpret("native.closeSession()")
     scalaRepl.close()
+    writer.close()
+    buffer.close()
   }
 
   def complete(buffer: String, cursor: Int): JList[String] = {
@@ -123,7 +104,7 @@ class EmmaRepl(properties: Properties) {
       withErr(buffer) {
         val code = scalaRepl interpret s"$str\n"
         writer.flush()
-        val message = buffer.toString.comprehend
+        val message = buffer.toString.trim.comprehend
         buffer.reset()
         new InterpreterResult(code, message)
       }
